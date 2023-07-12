@@ -3,7 +3,7 @@ import { __dirname } from '../utils.js';
 import path from "path";
 import fs from 'fs';
 
-export class CartstManager {
+export class CartsManager {
   constructor(fileName) {
     this.path = path.join(__dirname,`/files${fileName}`);
     this.products = []; 
@@ -86,4 +86,4 @@ export class CartstManager {
 }
 
 // module.exports = ProductManager;
-export default CartstManager;
+export default CartsManager;
