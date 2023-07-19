@@ -1,0 +1,59 @@
+<h1>Lista de productos en tiempo real</h1>
+<ul id="product-list"></ul>
+
+<form id="product-form">
+  <label for="title">Título:</label>
+  <input type="text" id="title" name="title">
+
+  <label for="price">Precio:</label>
+  <input type="number" id="price" name="price">
+
+  <button type="submit">Agregar Producto</button>
+</form>
+
+<script>
+  // Establecer la conexión WebSocket
+  const socket = io();
+
+  // Escuchar el evento 'updateProductList' para recibir actualizaciones en tiempo real
+  socket.on('updateProductList', (data) => {
+    if (typeof data === 'string') {
+      // Si se recibe un ID de producto, eliminar el elemento correspondiente de la lista
+      const productId = data;
+      const listItem = document.querySelector(`#product-list li[data-product-id="${productId}"]`);
+      if (listItem) {
+        listItem.remove();
+      }
+    } else {
+      // Si se recibe un nuevo producto, agregarlo a la lista
+      const product = data;
+      const listItem = document.createElement('li');
+      listItem.dataset.productId = product.id;
+      listItem.innerText = `Producto: ${product.title}, Precio: ${product.price}`;
+      document.querySelector('#product-list').appendChild(listItem);
+    }
+  });
+
+  // Obtener el formulario y escuchar el evento 'submit'
+  const productForm = document.querySelector('#product-form');
+  productForm.addEventListener('submit', (event) => {
+    event.preventDefault(); // Evitar que el formulario se envíe automáticamente
+
+    // Obtener los valores del formulario
+    const title = document.querySelector('#title').value;
+    const price = document.querySelector('#price').value;
+
+    // Crear un objeto con los datos del producto
+    const product = {
+      title,
+      price
+    };
+
+    // Enviar el objeto producto al servidor a través del evento 'newProduct'
+    socket.emit('newProduct', product);
+
+    // Limpiar los campos del formulario después de enviar los datos
+    document.querySelector('#title').value = '';
+    document.querySelector('#price').value = '';
+  });
+</script>

@@ -2,41 +2,59 @@ import { __dirname } from '../utils.js';
 import path from "path";
 import fs from 'fs';
 
-export class ProductManager {
+class ProductManager {
   constructor(fileName) {
-    this.path = path.join(__dirname,`/files${fileName}`);
-    this.products = []; 
-    this.loadProducts();
-    this.lastId = this.getLastId();
+    this.path = path.join(__dirname, 'files', fileName);
+    this.products = [];
+    this.lastId = 0; // Inicializar el último ID como 0
+  
+    // Llamar a loadProducts() dentro del constructor usando async/await
+    (async () => {
+      try {
+        this.products = await this.get();
+        this.lastId = this.getLastId();
+        // console.log(this.path);
+      } catch (error) {
+        console.error("Error al cargar los productos:", error);
+      }
+    })();
+  }
+
+  async fileExists() {
+    try {
+      await fs.promises.access(this.path, fs.constants.F_OK);
+      return true;
+    } catch (error) {
+      return false;
+    }
+  }
+  
+async get() {
+  try {
+    if (this.fileExists()) {
+      const content = await fs.promises.readFile(this.path, "utf-8");
+      // console.log("Contenido del archivo:", content);
+      const products = JSON.parse(content);
+      return products;
+    } else {
+      throw new Error("No es posible obtener los productos");
+    }
+  } catch (error) {
+    throw error;
+  }
 }
 
-    fileExists(){
-        return fs.existsSync(this.path);
-    }
-    async get(){
-        try{
-            if(this.fileExists()){
-                const content = await fs.promises.readFile(this.path,"utf-8");
-                const products = JSON.parse(content);
-                return products;
-            }else{
-                throw new Error("No es posible obtener los productos");
-            }
-        }catch(error){
-            throw error;
-        }
-    }
 
   // Cargar productos desde el archivo
-  loadProducts() {
+  async loadProducts() {
     try {
-      const fileData = fs.readFileSync(this.path, 'utf-8');
-      this.products = JSON.parse(fileData);
+      this.products = await this.get(); // Esperar a que se resuelva la promesa
     } catch (error) {
       this.products = [];
     }
   }
-
+  
+  
   // Guardar productos en el archivo
   saveProducts() {
     fs.writeFileSync(this.path, JSON.stringify(this.products, null, 2), 'utf-8');
@@ -64,9 +82,12 @@ export class ProductManager {
   }
 
   // Obtener todos los productos
-  getProducts() {
-    return this.products;
-  }
+// Dentro de la clase ProductManager
+
+ // Obtener todos los productos
+ getProducts() {
+  return this.products;
+}
 
   // Consultar un producto por ID
   getProductById(id) {

@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { ProductManager } from "../dao/productManager.js";
+import ProductManager from "../dao/productManager.js";
 
 const productService = new ProductManager("products.json");
 
@@ -9,9 +9,9 @@ const router = Router();
 // Lista todos los productos de la base
 router.get("/", async (req, res) => {
   try {
-    const limit = req.query.limit ? parseInt(req.query.limit) : undefined;
+    const limit = req.query.limit ? parseInt(req.query.limit) : 10;
     const products = await productService.getProducts(limit);
-    res.json({ status: "success", data: products });
+    res.json({ status: "RESPUESTA OBTENIDA", data: products });
   } catch (error) {
     res.json({ status: "error", message: error.message });
   }
@@ -53,7 +53,5 @@ router.delete("/:pid", (req, res) => {
       res.json({ status: "error", message: "Producto no encontrado" });
     }
   });
-  
 
-
-export { router as productsRouters };
+export { router as productsRouters }; //aca se exporta la ruta a app.js
